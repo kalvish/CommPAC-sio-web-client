@@ -221,11 +221,13 @@ function createPeerConnection(isInitiator, config) {
 	  //   dataChannel = event.channel;
 	  //   onDataChannelCreated(dataChannel);
 	  // };
-     p.ondatachannel = function(event) {
-      console.log('ondatachannel:', event.channel);
-      dataChannel = event.channel;
-      onDataChannelCreated(dataChannel);
-    };
+    //  p.ondatachannel = function(event) {
+    //   console.log('ondatachannel:', event.channel);
+    //   dataChannel = event.channel;
+    //   onDataChannelCreated(dataChannel);
+    // };
+
+    onDataChannelCreated(dataChannel);
 	}
 }
 
@@ -257,23 +259,24 @@ function onDataChannelCreated(channel) {
 
   p.on('data', function (data) {
     (adapter.browserDetails.browser === 'firefox') ?
-  receiveDataFirefoxFactory() : receiveDataChromeFactory();
-    console.log('data: ' + data)
+  receiveDataFirefoxFactory() : receiveDataChromeFactory(data);
+    //console.log('data: ' + data)
   })
 }
 
-function receiveDataChromeFactory() {
+function receiveDataChromeFactory(data) {
   var buf, count;
 
-  return function onmessage(event) {
-    if (typeof event.data === 'string') {
-      buf = window.buf = new Uint8ClampedArray(parseInt(event.data));
+  //return function onmessage(event) {
+    if (typeof data.type === 'string') {
+      buf = window.buf = new Uint8ClampedArray(parseInt(data));
       count = 0;
       console.log('Expecting a total of ' + buf.byteLength + ' bytes');
       return;
     }
 
-    var data = new Uint8ClampedArray(event.data);
+    //var data = new Uint8ClampedArray(event.data);
+    var data = new Uint8ClampedArray(data);
     buf.set(data, count);
 
     count += data.byteLength;
@@ -284,7 +287,7 @@ function receiveDataChromeFactory() {
 console.log('Done. Rendering photo.');
 renderPhoto(buf);
 }
-};
+//};
 }
 
 function receiveDataFirefoxFactory() {
@@ -346,20 +349,22 @@ len = img.data.byteLength,
 n = len / CHUNK_LEN | 0;
 
 console.log('Sending a total of ' + len + ' byte(s)');
-dataChannel.send(len);
-
+//dataChannel.send(len);
+p.send(len);
 // split the photo and send in chunks of about 64KB
 for (var i = 0; i < n; i++) {
   var start = i * CHUNK_LEN,
   end = (i + 1) * CHUNK_LEN;
   console.log(start + ' - ' + (end - 1));
-  dataChannel.send(img.data.subarray(start, end));
+  //dataChannel.send(img.data.subarray(start, end));
+  p.send(img.data.subarray(start, end));
 }
 
 // send the reminder, if any
 if (len % CHUNK_LEN) {
   console.log('last ' + len % CHUNK_LEN + ' byte(s)');
-  dataChannel.send(img.data.subarray(n * CHUNK_LEN));
+  //dataChannel.send(img.data.subarray(n * CHUNK_LEN));
+  p.send(img.data.subarray(n * CHUNK_LEN));
 }
 }
 
