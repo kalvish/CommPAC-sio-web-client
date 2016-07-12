@@ -86,9 +86,21 @@ socket.on('ready', function() {
 });
 
 socket.on('message', function(message) {
-  console.log('Client received message with type', message.type);
+  //console.log('Client received message ', message);
+  console.log('Client received message ', message);
+  
+  
   //signalingMessageCallback(message);
-  p.signal(message);
+  if(message.candidate){
+
+    var candTemp = { candidate : {
+      candidate: message.candidate
+    }};
+    p.signal(candTemp);
+  }else{
+    p.signal(message);
+  }
+  
 });
 
 socket.on('log', function(array) {
@@ -182,23 +194,23 @@ function createPeerConnection(isInitiator, config) {
 	//     console.log('End of candidates.');
 	//   }
 	// };
-  p.onicecandidate = function(event) {
-    console.log('icecandidate event:', event);
-    if (event.candidate) {
-      sendMessage({
-        type: 'candidate',
-        label: event.candidate.sdpMLineIndex,
-        id: event.candidate.sdpMid,
-        candidate: event.candidate.candidate
-      });
-    } else {
-      console.log('End of candidates.');
-    }
-  };
+  // p.onicecandidate = function(event) {
+  //   console.log('icecandidate event:', event);
+  //   if (event.candidate) {
+  //     sendMessage({
+  //       type: 'candidate',
+  //       label: event.candidate.sdpMLineIndex,
+  //       id: event.candidate.sdpMid,
+  //       candidate: event.candidate.candidate
+  //     });
+  //   } else {
+  //     console.log('End of candidates.');
+  //   }
+  // };
 
   p.on('signal', function (data) {
     sendMessage(data);
-    console.log('SIGNAL', JSON.stringify(data))
+    console.log('SIGNAL', data)
   })
 
 	if (isInitiator) {
