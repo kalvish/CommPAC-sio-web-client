@@ -57,7 +57,7 @@ if (room !== "") {
 socket.on('created', function(room, clientId) {
   isInitiator = true;
   console.log('Created room', room, '- my client ID is', clientId);
-  grabWebCamVideo();
+  //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
   //createSimplePeer(isInitiator, configuration);
 });
@@ -73,7 +73,7 @@ socket.on('ipaddr', function(ipaddr) {
 socket.on('joined', function(room, clientId) {
   isInitiator = false;
   console.log('This peer has joined room', room, 'with client ID', clientId);
-  grabWebCamVideo();
+  //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
   //createSimplePeer(isInitiator, configuration);
 });
@@ -250,17 +250,18 @@ function onDataChannelCreated(channel) {
   //   console.log('CHANNEL opened!!!');
   // };
   p.on('connect', function () {
-    console.log('CONNECT')
-    p.send('whatever' + Math.random())
+    var toSend = Math.random();
+    console.log('CONNECT and Send' + toSend);
+    p.send('whatever' + toSend);
   })
 
   //channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
   //receiveDataFirefoxFactory() : receiveDataChromeFactory();
 
   p.on('data', function (data) {
-    (adapter.browserDetails.browser === 'firefox') ?
-  receiveDataFirefoxFactory() : receiveDataChromeFactory(data);
-    //console.log('data: ' + data)
+    //(adapter.browserDetails.browser === 'firefox') ?
+  //receiveDataFirefoxFactory() : receiveDataChromeFactory(data);
+    console.log('data: ' + data)
   })
 }
 

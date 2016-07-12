@@ -58,7 +58,7 @@ if (room !== "") {
 socket.on('created', function(room, clientId) {
   isInitiator = true;
   console.log('Created room', room, '- my client ID is', clientId);
-  grabWebCamVideo();
+  //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
   //createSimplePeer(isInitiator, configuration);
 });
@@ -74,7 +74,7 @@ socket.on('ipaddr', function(ipaddr) {
 socket.on('joined', function(room, clientId) {
   isInitiator = false;
   console.log('This peer has joined room', room, 'with client ID', clientId);
-  grabWebCamVideo();
+  //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
   //createSimplePeer(isInitiator, configuration);
 });
@@ -251,17 +251,18 @@ function onDataChannelCreated(channel) {
   //   console.log('CHANNEL opened!!!');
   // };
   p.on('connect', function () {
-    console.log('CONNECT')
-    p.send('whatever' + Math.random())
+    var toSend = Math.random();
+    console.log('CONNECT and Send' + toSend);
+    p.send('whatever' + toSend);
   })
 
   //channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
   //receiveDataFirefoxFactory() : receiveDataChromeFactory();
 
   p.on('data', function (data) {
-    (adapter.browserDetails.browser === 'firefox') ?
-  receiveDataFirefoxFactory() : receiveDataChromeFactory(data);
-    //console.log('data: ' + data)
+    //(adapter.browserDetails.browser === 'firefox') ?
+  //receiveDataFirefoxFactory() : receiveDataChromeFactory(data);
+    console.log('data: ' + data)
   })
 }
 
@@ -1022,7 +1023,7 @@ Peer.prototype._debug = function () {
 function noop () {}
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":24,"debug":3,"get-browser-rtc":6,"hat":7,"inherits":8,"once":10,"readable-stream":22}],3:[function(require,module,exports){
+},{"buffer":25,"debug":3,"get-browser-rtc":6,"hat":7,"inherits":8,"once":10,"readable-stream":22}],3:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -2681,7 +2682,7 @@ function indexOf(xs, x) {
   return -1;
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":11,"_process":30,"buffer":24,"buffer-shims":16,"core-util-is":17,"events":28,"inherits":8,"isarray":18,"process-nextick-args":19,"string_decoder/":20,"util":23}],14:[function(require,module,exports){
+},{"./_stream_duplex":11,"_process":30,"buffer":25,"buffer-shims":16,"core-util-is":17,"events":26,"inherits":8,"isarray":18,"process-nextick-args":19,"string_decoder/":20,"util":24}],14:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -3391,7 +3392,7 @@ function CorkedRequest(state) {
   };
 }
 }).call(this,require('_process'))
-},{"./_stream_duplex":11,"_process":30,"buffer":24,"buffer-shims":16,"core-util-is":17,"events":28,"inherits":8,"process-nextick-args":19,"util-deprecate":21}],16:[function(require,module,exports){
+},{"./_stream_duplex":11,"_process":30,"buffer":25,"buffer-shims":16,"core-util-is":17,"events":26,"inherits":8,"process-nextick-args":19,"util-deprecate":21}],16:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -3503,7 +3504,7 @@ exports.allocUnsafeSlow = function allocUnsafeSlow(size) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"buffer":24}],17:[function(require,module,exports){
+},{"buffer":25}],17:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3613,8 +3614,8 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-}).call(this,{"isBuffer":require("../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js")})
-},{"../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/is-buffer/index.js":29}],18:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+},{"../../../../../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js":28}],18:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
@@ -3891,7 +3892,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":24}],21:[function(require,module,exports){
+},{"buffer":25}],21:[function(require,module,exports){
 (function (global){
 
 /**
@@ -3983,8 +3984,119 @@ if (!process.browser && process.env.READABLE_STREAM === 'disable' && Stream) {
 
 }).call(this,require('_process'))
 },{"./lib/_stream_duplex.js":11,"./lib/_stream_passthrough.js":12,"./lib/_stream_readable.js":13,"./lib/_stream_transform.js":14,"./lib/_stream_writable.js":15,"_process":30}],23:[function(require,module,exports){
+'use strict'
+
+exports.toByteArray = toByteArray
+exports.fromByteArray = fromByteArray
+
+var lookup = []
+var revLookup = []
+var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array
+
+function init () {
+  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  for (var i = 0, len = code.length; i < len; ++i) {
+    lookup[i] = code[i]
+    revLookup[code.charCodeAt(i)] = i
+  }
+
+  revLookup['-'.charCodeAt(0)] = 62
+  revLookup['_'.charCodeAt(0)] = 63
+}
+
+init()
+
+function toByteArray (b64) {
+  var i, j, l, tmp, placeHolders, arr
+  var len = b64.length
+
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4')
+  }
+
+  // the number of equal signs (place holders)
+  // if there are two placeholders, than the two characters before it
+  // represent one byte
+  // if there is only one, then the three characters before it represent 2 bytes
+  // this is just a cheap hack to not do indexOf twice
+  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+
+  // base64 is 4/3 + up to two characters of the original data
+  arr = new Arr(len * 3 / 4 - placeHolders)
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  l = placeHolders > 0 ? len - 4 : len
+
+  var L = 0
+
+  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
+    arr[L++] = (tmp >> 16) & 0xFF
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  if (placeHolders === 2) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
+    arr[L++] = tmp & 0xFF
+  } else if (placeHolders === 1) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  return arr
+}
+
+function tripletToBase64 (num) {
+  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+}
+
+function encodeChunk (uint8, start, end) {
+  var tmp
+  var output = []
+  for (var i = start; i < end; i += 3) {
+    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+    output.push(tripletToBase64(tmp))
+  }
+  return output.join('')
+}
+
+function fromByteArray (uint8) {
+  var tmp
+  var len = uint8.length
+  var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
+  var output = ''
+  var parts = []
+  var maxChunkLength = 16383 // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1]
+    output += lookup[tmp >> 2]
+    output += lookup[(tmp << 4) & 0x3F]
+    output += '=='
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
+    output += lookup[tmp >> 10]
+    output += lookup[(tmp >> 4) & 0x3F]
+    output += lookup[(tmp << 2) & 0x3F]
+    output += '='
+  }
+
+  parts.push(output)
+
+  return parts.join('')
+}
 
 },{}],24:[function(require,module,exports){
+
+},{}],25:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -5699,206 +5811,7 @@ function isnan (val) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":25,"ieee754":26,"isarray":27}],25:[function(require,module,exports){
-'use strict'
-
-exports.toByteArray = toByteArray
-exports.fromByteArray = fromByteArray
-
-var lookup = []
-var revLookup = []
-var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array
-
-function init () {
-  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-  for (var i = 0, len = code.length; i < len; ++i) {
-    lookup[i] = code[i]
-    revLookup[code.charCodeAt(i)] = i
-  }
-
-  revLookup['-'.charCodeAt(0)] = 62
-  revLookup['_'.charCodeAt(0)] = 63
-}
-
-init()
-
-function toByteArray (b64) {
-  var i, j, l, tmp, placeHolders, arr
-  var len = b64.length
-
-  if (len % 4 > 0) {
-    throw new Error('Invalid string. Length must be a multiple of 4')
-  }
-
-  // the number of equal signs (place holders)
-  // if there are two placeholders, than the two characters before it
-  // represent one byte
-  // if there is only one, then the three characters before it represent 2 bytes
-  // this is just a cheap hack to not do indexOf twice
-  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
-
-  // base64 is 4/3 + up to two characters of the original data
-  arr = new Arr(len * 3 / 4 - placeHolders)
-
-  // if there are placeholders, only get up to the last complete 4 chars
-  l = placeHolders > 0 ? len - 4 : len
-
-  var L = 0
-
-  for (i = 0, j = 0; i < l; i += 4, j += 3) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
-    arr[L++] = (tmp >> 16) & 0xFF
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
-  }
-
-  if (placeHolders === 2) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
-    arr[L++] = tmp & 0xFF
-  } else if (placeHolders === 1) {
-    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
-    arr[L++] = (tmp >> 8) & 0xFF
-    arr[L++] = tmp & 0xFF
-  }
-
-  return arr
-}
-
-function tripletToBase64 (num) {
-  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
-}
-
-function encodeChunk (uint8, start, end) {
-  var tmp
-  var output = []
-  for (var i = start; i < end; i += 3) {
-    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
-    output.push(tripletToBase64(tmp))
-  }
-  return output.join('')
-}
-
-function fromByteArray (uint8) {
-  var tmp
-  var len = uint8.length
-  var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
-  var output = ''
-  var parts = []
-  var maxChunkLength = 16383 // must be multiple of 3
-
-  // go through the array every three bytes, we'll deal with trailing stuff later
-  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
-  }
-
-  // pad the end with zeros, but make sure to not forget the extra bytes
-  if (extraBytes === 1) {
-    tmp = uint8[len - 1]
-    output += lookup[tmp >> 2]
-    output += lookup[(tmp << 4) & 0x3F]
-    output += '=='
-  } else if (extraBytes === 2) {
-    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
-    output += lookup[tmp >> 10]
-    output += lookup[(tmp >> 4) & 0x3F]
-    output += lookup[(tmp << 2) & 0x3F]
-    output += '='
-  }
-
-  parts.push(output)
-
-  return parts.join('')
-}
-
-},{}],26:[function(require,module,exports){
-exports.read = function (buffer, offset, isLE, mLen, nBytes) {
-  var e, m
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var nBits = -7
-  var i = isLE ? (nBytes - 1) : 0
-  var d = isLE ? -1 : 1
-  var s = buffer[offset + i]
-
-  i += d
-
-  e = s & ((1 << (-nBits)) - 1)
-  s >>= (-nBits)
-  nBits += eLen
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1)
-  e >>= (-nBits)
-  nBits += mLen
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen)
-    e = e - eBias
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
-  var i = isLE ? 0 : (nBytes - 1)
-  var d = isLE ? 1 : -1
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
-
-  value = Math.abs(value)
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0
-    e = eMax
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2)
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--
-      c *= 2
-    }
-    if (e + eBias >= 1) {
-      value += rt / c
-    } else {
-      value += rt * Math.pow(2, 1 - eBias)
-    }
-    if (value * c >= 2) {
-      e++
-      c /= 2
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0
-      e = eMax
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen)
-      e = e + eBias
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
-      e = 0
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m
-  eLen += mLen
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128
-}
-
-},{}],27:[function(require,module,exports){
-arguments[4][18][0].apply(exports,arguments)
-},{"dup":18}],28:[function(require,module,exports){
+},{"base64-js":23,"ieee754":27,"isarray":29}],26:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -6202,7 +6115,93 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
+exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
+
+},{}],28:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -6221,7 +6220,9 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
+arguments[4][18][0].apply(exports,arguments)
+},{"dup":18}],30:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
