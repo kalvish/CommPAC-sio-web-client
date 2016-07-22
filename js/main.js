@@ -44,7 +44,8 @@ var socket = io.connect(SIGNALINGSERVER);
 
 if (room !== "") {
   console.log('Message from client: Asking to join room ' + room);
-  socket.emit('create or join', room);
+  //socket.emit('create or join', room);
+  socket.emit('createroom', room);
   // io.connect(SIGNALINGSERVER).emit('create or join', {
   //           room: room
   //       });
@@ -57,8 +58,6 @@ socket.on('created', function(room, clientId) {
   console.log('Created room', room, '- my client ID is', clientId);
   //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
-
-
 });
 
 socket.on('full', function(room) {
@@ -83,6 +82,10 @@ socket.on('ready', function() {
 
 socket.on('message', function(message) {
   console.log('Client received message with type', message.type);
+  console.log('Client received message', message);
+  if(message.candidate){
+    console.log('Client received message type candidate');
+  }
   signalingMessageCallback(message);
 });
 
@@ -123,11 +126,21 @@ function signalingMessageCallback(message) {
                                   logError);
 
   } else if (message.type === 'candidate') {
+    console.log('Got offer. Sending answer to peer.', {
+      candidate: message.candidate
+    });
     peerConn.addIceCandidate(new RTCIceCandidate({
       candidate: message.candidate
     }));
 
-  } else if (message === 'bye') {
+  } else if (message.candidate) {
+    console.log('Got offer. Sending answer to peer.', {
+      candidate: message.candidate
+    });
+    peerConn.addIceCandidate(new RTCIceCandidate(
+      message.candidate
+    ));
+  }else if (message === 'bye') {
     // TODO: cleanup RTC connection?
   }
 }
@@ -286,7 +299,6 @@ function sendPhoto() {
    var toSend = Math.random();
     console.log('CONNECT and Send' + toSend);
     dataChannel.send('whatever' + toSend);
-    
 // Split data channel message in chunks of this byte length.
 // var CHUNK_LEN = 64000;
 // console.log('width and height ', photoContextW, photoContextH);
