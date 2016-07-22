@@ -38,7 +38,7 @@ window.room = prompt("Enter room name:");
 /****************************************************************************
 * Signaling server -Start
 ****************************************************************************/
-var SIGNALINGSERVER = 'https://54.186.253.62:8080';
+var SIGNALINGSERVER = 'http://54.186.253.62:8080';
 
 var socket = io.connect(SIGNALINGSERVER);
 
@@ -57,6 +57,8 @@ socket.on('created', function(room, clientId) {
   console.log('Created room', room, '- my client ID is', clientId);
   //grabWebCamVideo();
   createPeerConnection(isInitiator, configuration);
+
+
 });
 
 socket.on('full', function(room) {
@@ -139,12 +141,18 @@ function createPeerConnection(isInitiator, config) {
 	peerConn.onicecandidate = function(event) {
 	  console.log('icecandidate event:', event);
 	  if (event.candidate) {
-	    sendMessage({
-	      type: 'candidate',
-	      label: event.candidate.sdpMLineIndex,
-	      id: event.candidate.sdpMid,
-	      candidate: event.candidate.candidate
-	    });
+	    // sendMessage({"candidate" :{
+     //    candidate: event.candidate.candidate,
+	    //   sdpMLineIndex: event.candidate.sdpMLineIndex,
+	    //   sdpMid: event.candidate.sdpMid
+	    // }});
+            sendMessage({"candidate" : event.candidate});
+      //  sendMessage({
+      //   type: 'candidate',
+      //   label: event.candidate.sdpMLineIndex,
+      //   id: event.candidate.sdpMid,
+      //   candidate: event.candidate.candidate
+      // });
       // var cand = JSON.parse(event.candidate.candidate);
       //  sendMessage({
       //   type: 'candidate',
@@ -268,34 +276,40 @@ function receiveDataFirefoxFactory() {
 ****************************************************************************/
 
 function snapPhoto() {
-  photoContext.drawImage(video, 0, 0, photo.width, photo.height);
-  show(photo, sendBtn);
+  socket.emit('create server client', room);
+
+  // photoContext.drawImage(video, 0, 0, photo.width, photo.height);
+  // show(photo, sendBtn);
 }
 
 function sendPhoto() {
+   var toSend = Math.random();
+    console.log('CONNECT and Send' + toSend);
+    dataChannel.send('whatever' + toSend);
+    
 // Split data channel message in chunks of this byte length.
-var CHUNK_LEN = 64000;
-console.log('width and height ', photoContextW, photoContextH);
-var img = photoContext.getImageData(0, 0, photoContextW, photoContextH),
-len = img.data.byteLength,
-n = len / CHUNK_LEN | 0;
+// var CHUNK_LEN = 64000;
+// console.log('width and height ', photoContextW, photoContextH);
+// var img = photoContext.getImageData(0, 0, photoContextW, photoContextH),
+// len = img.data.byteLength,
+// n = len / CHUNK_LEN | 0;
 
-console.log('Sending a total of ' + len + ' byte(s)');
-dataChannel.send(len);
+// console.log('Sending a total of ' + len + ' byte(s)');
+// dataChannel.send(len);
 
-// split the photo and send in chunks of about 64KB
-for (var i = 0; i < n; i++) {
-  var start = i * CHUNK_LEN,
-  end = (i + 1) * CHUNK_LEN;
-  console.log(start + ' - ' + (end - 1));
-  dataChannel.send(img.data.subarray(start, end));
-}
+// // split the photo and send in chunks of about 64KB
+// for (var i = 0; i < n; i++) {
+//   var start = i * CHUNK_LEN,
+//   end = (i + 1) * CHUNK_LEN;
+//   console.log(start + ' - ' + (end - 1));
+//   dataChannel.send(img.data.subarray(start, end));
+// }
 
-// send the reminder, if any
-if (len % CHUNK_LEN) {
-  console.log('last ' + len % CHUNK_LEN + ' byte(s)');
-  dataChannel.send(img.data.subarray(n * CHUNK_LEN));
-}
+// // send the reminder, if any
+// if (len % CHUNK_LEN) {
+//   console.log('last ' + len % CHUNK_LEN + ' byte(s)');
+//   dataChannel.send(img.data.subarray(n * CHUNK_LEN));
+// }
 }
 
 function snapAndSend() {
