@@ -45,7 +45,9 @@ var socket = io.connect(SIGNALINGSERVER);
 if (room !== "") {
   console.log('Message from client: Asking to join room ' + room);
   //socket.emit('create or join', room);
-  socket.emit('createroom', room);
+  //socket.emit('createroom', room);
+  
+  socket.emit('commpac-server_room_create_or_join', room);
   // io.connect(SIGNALINGSERVER).emit('create or join', {
   //           room: room
   //       });
@@ -79,6 +81,23 @@ socket.on('ready', function() {
   console.log('Socket is ready');
   createPeerConnection(isInitiator, configuration);
 });
+
+socket.on('commpac_room_joined', function(message) {
+  console.log('on-commpac_room_joined',message);
+  
+});
+
+socket.on('commpac_room_created', function(message) {
+  console.log('on-commpac_room_created',message);
+  
+});
+
+socket.on('commpac-client_server_client_ready', function(message,message2) {
+  console.log('on-commpac-client_server_client_ready',message,message2);
+  
+});
+
+commpac_room_joined
 
 socket.on('message', function(message) {
   console.log('Client received message with type', message.type);
