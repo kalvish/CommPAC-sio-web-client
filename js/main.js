@@ -15,6 +15,9 @@ var trail = document.getElementById('trail');
 var snapBtn = document.getElementById('snap');
 var sendBtn = document.getElementById('send');
 var snapAndSendBtn = document.getElementById('snapAndSend');
+var createconnectionBtn = document.getElementById('createconnection');
+var joinroomBtn = document.getElementById('joinroom');
+var senddataBtn = document.getElementById('senddata');
 /****************************************************************************
 * UI Initialization - End
 ****************************************************************************/
@@ -29,6 +32,10 @@ var photoContextH;
 snapBtn.addEventListener('click', snapPhoto);
 sendBtn.addEventListener('click', sendPhoto);
 snapAndSendBtn.addEventListener('click', snapAndSend);
+
+createconnectionBtn.addEventListener('click', createConnectionMethod);
+joinroomBtn.addEventListener('click', joinRoomMethod);
+senddataBtn.addEventListener('click', sendDataMethod);
 
 window.room = prompt("Enter room name:");
 /****************************************************************************
@@ -254,41 +261,57 @@ function onDataChannelCreated(channel) {
 
   channel.onopen = function() {
     var toSend = Math.random();
-    console.log('CONNECT and Send' + toSend);
-    dataChannel.send('whatever' + toSend);
+    console.log('CHANNEL opened!!!');
+    //console.log('CONNECT and Send' + toSend);
+    //dataChannel.send('whatever' + toSend);
   };
 
-  //channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
-  //receiveDataFirefoxFactory() : receiveDataChromeFactory();
+ // channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
+ // receiveDataFirefoxFactory() : receiveDataChromeFactory();
 
   channel.onmessage = function(data) {
     console.log('Received' + event.data);
   };
 }
 
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
 function receiveDataChromeFactory() {
   var buf, count;
 
   return function onmessage(event) {
-    if (typeof event.data === 'string') {
+    //var datastring = ab2str(event.data);
+    //console.log('data: ', datastring);
+    //if (typeof event.data === 'string') {
       buf = window.buf = new Uint8ClampedArray(parseInt(event.data));
       count = 0;
       console.log('Expecting a total of ' + buf.byteLength + ' bytes');
-      return;
-    }
+     // return;
+   // }
 
-    var data = new Uint8ClampedArray(event.data);
+    /*var data = new Uint8ClampedArray(event.data);
     buf.set(data, count);
 
     count += data.byteLength;
     console.log('count: ' + count);
 
     if (count === buf.byteLength) {
-// we're done: all data chunks have been received
-console.log('Done. Rendering photo.');
-renderPhoto(buf);
-}
-};
+        // we're done: all data chunks have been received
+        console.log('Done. Rendering photo.');
+        renderPhoto(buf);
+    }*/
+  };
 }
 
 function receiveDataFirefoxFactory() {
@@ -336,48 +359,66 @@ function receiveDataFirefoxFactory() {
 * Aux functions, mostly UI-related - Start
 ****************************************************************************/
 
+function createConnectionMethod() {
+   socket.emit('commpac server create peer connection', {room:myRoom,clientid:myCliendId});
+}
+
+function joinRoomMethod() {
+   isInitiator = true;
+  console.log('create peer conn');
+  createPeerConnection(isInitiator, configuration);
+  grabWebCamVideo();
+}
+
+function sendDataMethod() {
+  var toSend = Math.random();
+    console.log('CONNECT and Send' + toSend);
+    dataChannel.send('whatever' + toSend);
+}
+
 function snapPhoto() {
   //socket.emit('create server client', room);
-  socket.emit('commpac server create peer connection', {room:myRoom,clientid:myCliendId});
+ // socket.emit('commpac server create peer connection', {room:myRoom,clientid:myCliendId});
 
-  // photoContext.drawImage(video, 0, 0, photo.width, photo.height);
-  // show(photo, sendBtn);
+   photoContext.drawImage(video, 0, 0, photo.width, photo.height);
+   show(photo, sendBtn);
 }
 
 function sendPhoto() {
-   var toSend = Math.random();
-    console.log('CONNECT and Send' + toSend);
-    dataChannel.send('whatever' + toSend);
-// Split data channel message in chunks of this byte length.
-// var CHUNK_LEN = 64000;
-// console.log('width and height ', photoContextW, photoContextH);
-// var img = photoContext.getImageData(0, 0, photoContextW, photoContextH),
-// len = img.data.byteLength,
-// n = len / CHUNK_LEN | 0;
+  // var toSend = Math.random();
+   // console.log('CONNECT and Send' + toSend);
+   // dataChannel.send('whatever' + toSend);
 
-// console.log('Sending a total of ' + len + ' byte(s)');
-// dataChannel.send(len);
+//Split data channel message in chunks of this byte length.
+var CHUNK_LEN = 64000;
+console.log('width and height ', photoContextW, photoContextH);
+var img = photoContext.getImageData(0, 0, photoContextW, photoContextH),
+len = img.data.byteLength,
+n = len / CHUNK_LEN | 0;
 
-// // split the photo and send in chunks of about 64KB
-// for (var i = 0; i < n; i++) {
-//   var start = i * CHUNK_LEN,
-//   end = (i + 1) * CHUNK_LEN;
-//   console.log(start + ' - ' + (end - 1));
-//   dataChannel.send(img.data.subarray(start, end));
-// }
+console.log('Sending a total of ' + len + ' byte(s)');
+dataChannel.send('Sending a total of ' + len + ' byte(s)');
 
-// // send the reminder, if any
-// if (len % CHUNK_LEN) {
-//   console.log('last ' + len % CHUNK_LEN + ' byte(s)');
-//   dataChannel.send(img.data.subarray(n * CHUNK_LEN));
-// }
+// split the photo and send in chunks of about 64KB
+for (var i = 0; i < n; i++) {
+  var start = i * CHUNK_LEN,
+  end = (i + 1) * CHUNK_LEN;
+  console.log(start + ' - ' + (end - 1));
+  //dataChannel.send(img.data.subarray(start, end));
+}
+
+// send the reminder, if any
+if (len % CHUNK_LEN) {
+  console.log('last ' + len % CHUNK_LEN + ' byte(s)');
+  //dataChannel.send(img.data.subarray(n * CHUNK_LEN));
+}
 }
 
 function snapAndSend() {
-  isInitiator = true;
-  console.log('create peer conn');
+ // isInitiator = true;
+ // console.log('create peer conn');
   //grabWebCamVideo();
-  createPeerConnection(isInitiator, configuration);
+ // createPeerConnection(isInitiator, configuration);
 
   //snapPhoto();
   //sendPhoto();
