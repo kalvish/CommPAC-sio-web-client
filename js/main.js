@@ -224,7 +224,9 @@ function createPeerConnection(isInitiator, config) {
 
 	if (isInitiator) {
 	  console.log('Creating Data Channel');
-	  dataChannel = peerConn.createDataChannel('photos');
+    var channelName = myRoom + 'commpac' + myCliendId;
+    dataChannel = peerConn.createDataChannel(channelName);
+	  //dataChannel = peerConn.createDataChannel('photos');
 	  onDataChannelCreated(dataChannel);
 
 	  console.log('Creating an offer');
