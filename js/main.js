@@ -83,20 +83,37 @@ socket.on('ready', function() {
   createPeerConnection(isInitiator, configuration);
 });
 
+var myRoom;
+var myCliendId;
+
 socket.on('commpac room joined', function(message) {
   console.log('on-commpac room joined',message);
+  myRoom = message.room;
+  myCliendId = message.clientid;
+  console.log('on-commpac room joined details',myRoom,myCliendId);
   
 });
 
 socket.on('commpac room created', function(message) {
   console.log('on-commpac room created',message);
-  
+  myRoom = message.room;
+  myCliendId = message.clientid;
+  console.log('on-commpac room created details',myRoom,myCliendId);
 });
 
 socket.on('commpac client server client ready', function(message,message2) {
   console.log('on-commpac client server client ready',message,message2);
   
 });
+
+
+socket.on('commpac client message', function(message) {
+  console.log('on-commpac client message',message)
+  if(message.room===myRoom && message.clientid===myCliendId){
+    signalingMessageCallback(message.content);
+  }
+  
+  });
 
 socket.on('message', function(message) {
   console.log('Client received message with type', message.type);
@@ -110,6 +127,12 @@ socket.on('message', function(message) {
 socket.on('log', function(array) {
   console.log.apply(console, array);
 });
+
+function sendMessageToRemote(message) {
+  console.log('Client sending message with type ', message.type);
+  var messageToSend = {room:myRoom,clientid:myCliendId,content:message,from:'client'};
+  socket.emit('commpac server message', messageToSend);
+}
 
 /**
 * Send message to signaling server
@@ -177,7 +200,11 @@ function createPeerConnection(isInitiator, config) {
 	    //   sdpMLineIndex: event.candidate.sdpMLineIndex,
 	    //   sdpMid: event.candidate.sdpMid
 	    // }});
-            sendMessage({"candidate" : event.candidate});
+
+            //sendMessage({"candidate" : event.candidate});
+            sendMessageToRemote({"candidate" : event.candidate});
+      
+
       //  sendMessage({
       //   type: 'candidate',
       //   label: event.candidate.sdpMLineIndex,
@@ -215,7 +242,8 @@ function onLocalSessionCreated(desc) {
   console.log('local session created:', desc);
   peerConn.setLocalDescription(desc, function() {
     console.log('sending local desc:', peerConn.localDescription);
-    sendMessage(peerConn.localDescription);
+    //sendMessage(peerConn.localDescription);
+    sendMessageToRemote(peerConn.localDescription);
   }, logError);
 }
 
@@ -307,7 +335,8 @@ function receiveDataFirefoxFactory() {
 ****************************************************************************/
 
 function snapPhoto() {
-  socket.emit('create server client', room);
+  //socket.emit('create server client', room);
+  socket.emit('commpac server create peer connection', {room:myRoom,clientid:myCliendId});
 
   // photoContext.drawImage(video, 0, 0, photo.width, photo.height);
   // show(photo, sendBtn);
@@ -343,8 +372,13 @@ function sendPhoto() {
 }
 
 function snapAndSend() {
-  snapPhoto();
-  sendPhoto();
+  isInitiator = true;
+  console.log('create peer conn');
+  //grabWebCamVideo();
+  createPeerConnection(isInitiator, configuration);
+
+  //snapPhoto();
+  //sendPhoto();
 }
 
 function renderPhoto(data) {
