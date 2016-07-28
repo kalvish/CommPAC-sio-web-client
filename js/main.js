@@ -363,7 +363,7 @@ function snapPhoto() {
 function sendPhoto() {
    var toSend = Math.random();
     console.log('CONNECT and Send' + toSend);
-    dataChannel.send('whatever' + toSend);
+    dataChannel.send(str2ab('whatever' + toSend));
 // Split data channel message in chunks of this byte length.
 // var CHUNK_LEN = 64000;
 // console.log('width and height ', photoContextW, photoContextH);
