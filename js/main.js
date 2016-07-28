@@ -255,7 +255,8 @@ function onDataChannelCreated(channel) {
   channel.onopen = function() {
     var toSend = Math.random();
     console.log('CONNECT and Send' + toSend);
-    dataChannel.send('whatever' + toSend);
+    //dataChannel.send('whatever' + toSend);
+    dataChannel.send(str2ab('whatever' + toSend));
   };
 
   //channel.onmessage = (adapter.browserDetails.browser === 'firefox') ?
@@ -263,59 +264,22 @@ function onDataChannelCreated(channel) {
 
   channel.onmessage = function(event) {
     console.log('Received' + event.data);
-    var deStr = Utf8ArrayToStr(event.data);
+    var deStr = ab2str(event.data);
     console.log('Received str' + deStr);
   };
 }
 
-function stringToUint(string) {
-    var string = btoa(unescape(encodeURIComponent(string))),
-        charList = string.split(''),
-        uintArray = [];
-    for (var i = 0; i < charList.length; i++) {
-        uintArray.push(charList[i].charCodeAt(0));
-    }
-    return new Uint8Array(uintArray);
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 
-function uintToString(uintArray) {
-    var encodedString = String.fromCharCode.apply(null, uintArray),
-        decodedString = decodeURIComponent(escape(encodedString));
-    return decodedString;
-}
-
-function Utf8ArrayToStr(array) {
-    var out, i, len, c;
-    var char2, char3;
-
-    out = "";
-    len = array.length;
-    i = 0;
-    while(i < len) {
-    c = array[i++];
-    switch(c >> 4)
-    { 
-      case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
-        // 0xxxxxxx
-        out += String.fromCharCode(c);
-        break;
-      case 12: case 13:
-        // 110x xxxx   10xx xxxx
-        char2 = array[i++];
-        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
-        break;
-      case 14:
-        // 1110 xxxx  10xx xxxx  10xx xxxx
-        char2 = array[i++];
-        char3 = array[i++];
-        out += String.fromCharCode(((c & 0x0F) << 12) |
-                       ((char2 & 0x3F) << 6) |
-                       ((char3 & 0x3F) << 0));
-        break;
-    }
-    }
-
-    return out;
+function str2ab(str) {
+  var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+  var bufView = new Uint16Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
 }
 
 function receiveDataChromeFactory() {
