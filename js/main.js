@@ -4,6 +4,9 @@ var isInitiator = false;
 
 var configuration = null;
 
+var isCommpacClientCreatedPeerConnection = false;
+var isCommpacRoomCreatedOrJoined = false;
+
 /****************************************************************************
 * UI Initialization - Start
 ****************************************************************************/
@@ -56,31 +59,40 @@ if (room !== "") {
 
 
 
-socket.on('created', function(room, clientId) {
-  isInitiator = true;
-  console.log('Created room', room, '- my client ID is', clientId);
-  //grabWebCamVideo();
-  createPeerConnection(isInitiator, configuration);
-});
+// socket.on('created', function(room, clientId) {
+//   isInitiator = true;
+//   console.log('Created room', room, '- my client ID is', clientId);
+//   //grabWebCamVideo();
+//   createPeerConnection(isInitiator, configuration);
+// });
 
-socket.on('full', function(room) {
-  console.log('Message from client: Room ' + room + ' is full :^(');
-});
+// socket.on('full', function(room) {
+//   console.log('Message from client: Room ' + room + ' is full :^(');
+// });
 
-socket.on('ipaddr', function(ipaddr) {
-  console.log('Message from client: Server IP address is ' + ipaddr);
-});
+// socket.on('ipaddr', function(ipaddr) {
+//   console.log('Message from client: Server IP address is ' + ipaddr);
+// });
 
-socket.on('joined', function(room, clientId) {
-  isInitiator = false;
-  console.log('This peer has joined room', room, 'with client ID', clientId);
-  //grabWebCamVideo();
-  createPeerConnection(isInitiator, configuration);
-});
+// socket.on('joined', function(room, clientId) {
+//   isInitiator = false;
+//   console.log('This peer has joined room', room, 'with client ID', clientId);
+//   //grabWebCamVideo();
+//   createPeerConnection(isInitiator, configuration);
+// });
 
-socket.on('ready', function() {
-  console.log('Socket is ready');
-  createPeerConnection(isInitiator, configuration);
+// socket.on('ready', function() {
+//   console.log('Socket is ready');
+//   createPeerConnection(isInitiator, configuration);
+// });
+
+
+socket.on('commpac client created peer connection', function() {
+  console.log('on-commpac client created peer connection');
+  if(!isCommpacClientCreatedPeerConnection) {
+    isCommpacClientCreatedPeerConnection = true;
+    //run the creation of peer conn
+  }
 });
 
 var myRoom;
@@ -88,17 +100,25 @@ var myCliendId;
 
 socket.on('commpac room joined', function(message) {
   console.log('on-commpac room joined',message);
-  myRoom = message.room;
-  myCliendId = message.clientid;
-  console.log('on-commpac room joined details',myRoom,myCliendId);
+  if(!isCommpacRoomCreatedOrJoined){
+    isCommpacRoomCreatedOrJoined = true;
+    myRoom = message.room;
+    myCliendId = message.clientid;
+    console.log('on-commpac room joined details',myRoom,myCliendId);
+  }
+
   
 });
 
 socket.on('commpac room created', function(message) {
   console.log('on-commpac room created',message);
-  myRoom = message.room;
-  myCliendId = message.clientid;
-  console.log('on-commpac room created details',myRoom,myCliendId);
+  if(!isCommpacRoomCreatedOrJoined){
+    isCommpacRoomCreatedOrJoined = true;
+    myRoom = message.room;
+    myCliendId = message.clientid;
+    console.log('on-commpac room created details',myRoom,myCliendId);
+  }
+  
 });
 
 socket.on('commpac client server client ready', function(message,message2) {
@@ -115,14 +135,14 @@ socket.on('commpac client message', function(message) {
   
   });
 
-socket.on('message', function(message) {
-  console.log('Client received message with type', message.type);
-  console.log('Client received message', message);
-  if(message.candidate){
-    console.log('Client received message type candidate');
-  }
-  signalingMessageCallback(message);
-});
+// socket.on('message', function(message) {
+//   console.log('Client received message with type', message.type);
+//   console.log('Client received message', message);
+//   if(message.candidate){
+//     console.log('Client received message type candidate');
+//   }
+//   signalingMessageCallback(message);
+// });
 
 socket.on('log', function(array) {
   console.log.apply(console, array);
@@ -137,10 +157,10 @@ function sendMessageToRemote(message) {
 /**
 * Send message to signaling server
 */
-function sendMessage(message) {
-  console.log('Client sending message with type ', message.type);
-  socket.emit('message', message);
-}
+// function sendMessage(message) {
+//   console.log('Client sending message with type ', message.type);
+//   socket.emit('message', message);
+// }
 
 /****************************************************************************
 * Signaling server - End
