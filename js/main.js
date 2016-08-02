@@ -2,8 +2,11 @@
 
 var isInitiator = false;
 
-var configuration = null;
+//var configuration = null;
 
+var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"},
+                        {"url":"turn:kalan@54.213.123.104", 
+                                          "credential":"1234"}]};
 var isCommpacClientCreatedPeerConnection = false;
 var isCommpacRoomCreatedOrJoined = false;
 
