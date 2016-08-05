@@ -2,11 +2,11 @@
 
 var isInitiator = false;
 
-//var configuration = null;
+var configuration = null;
 
-var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"},
-                        {"url":"turn:kalan@54.213.123.104", 
-                                          "credential":"1234"}]};
+// var configuration = {"iceServers": [{"url": "stun:stun.l.google.com:19302"},
+//                         {"url":"turn:kalan@54.213.123.104", 
+//                                           "credential":"1234"}]};
 var isCommpacClientCreatedPeerConnection = false;
 var isCommpacRoomCreatedOrJoined = false;
 
@@ -44,7 +44,9 @@ window.room = prompt("Enter room name:");
 /****************************************************************************
 * Signaling server -Start
 ****************************************************************************/
+//var SIGNALINGSERVER = 'http://54.213.123.104:8080';
 var SIGNALINGSERVER = 'http://54.186.253.62:8080';
+//var SIGNALINGSERVER = 'http://54.218.12.95:8080';
 
 var socket = io.connect(SIGNALINGSERVER);
 
